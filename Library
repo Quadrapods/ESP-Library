@@ -16,20 +16,32 @@ end
 
 function ESP:GetCustomVector(a)
     local x = game:GetService('Workspace').CurrentCamera
-    local y, _ = x:WorldToViewportPoint(a)
-    return (Vector2.new(y.X, y.Y))
-end
-
-function ESP:GetObjectVector(a)
-    local x = game:GetService('Workspace').CurrentCamera
-    local y, _ = x:WorldToViewportPoint(a.Position)
-    return (Vector2.new(y.X, y.Y))
+    local _, y = x:WorldToViewportPoint(a)
+    return (y)
 end
 
 function ESP:GetObjectRender(a)
     local x = game:GetService('Workspace').CurrentCamera
     local _, y = x:WorldToViewportPoint(a.Position)
     return (y)
+end
+
+function ESP:GetCustomVector(a, b, c)
+    local x = game:GetService('Workspace').CurrentCamera
+    local y, _ = x:WorldToViewportPoint(a)
+    if (b and c) then
+        return (Vector2.new(y.X - b, y.Y - c))
+    end
+    return (Vector2.new(y.X, y.Y))
+end
+
+function ESP:GetObjectVector(a, b, c)
+    local x = game:GetService('Workspace').CurrentCamera
+    local y, _ = x:WorldToViewportPoint(a.Position)
+    if (b and c) then
+        return (Vector2.new(y.X - b, y.Y - c))
+    end
+    return (Vector2.new(y.X, y.Y))
 end
 
 ----- // Methods // -----
