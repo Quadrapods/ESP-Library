@@ -14,6 +14,28 @@ function ESP:ClearRenderObjects()
     end
 end
 
+function ESP:GetAllHumanoids()
+    local x = game:GetService('Workspace')
+    local y = {}
+    for _, v in pairs(x:GetDescendants()) do
+        if (v and v:IsA('Humanoid')) then
+            table.insert(y, v)
+        end
+    end
+    return (y)
+end
+
+function ESP:GetAllRootParts()
+    local x = game:GetService('Workspace')
+    local y = {}
+    for _, v in pairs(x:GetDescendants()) do
+        if (v and v:IsA('BasePart') and v.Name == 'HumanoidRootPart')) then
+            table.insert(y, v)
+        end
+    end
+    return (y)
+end
+
 function ESP:GetCustomVector(a)
     local x = game:GetService('Workspace').CurrentCamera
     local _, y = x:WorldToViewportPoint(a)
