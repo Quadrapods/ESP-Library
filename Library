@@ -15,25 +15,25 @@ function ESP:ClearRenderObjects()
 end
 
 function ESP:GetAllHumanoids()
-    local x = game:GetService('Workspace')
-    local y = {}
-    for _, v in pairs(x:GetDescendants()) do
+    local x = {}
+    local y = game:GetService('Workspace')
+    for _, v in pairs(y:GetDescendants()) do
         if (v and v:IsA('Humanoid')) then
-            table.insert(y, v)
+            table.insert(x, v)
         end
     end
-    return (y)
+    return (x)
 end
 
 function ESP:GetAllRootParts()
-    local x = game:GetService('Workspace')
-    local y = {}
-    for _, v in pairs(x:GetDescendants()) do
-        if (v and v:IsA('BasePart') and v.Name == 'HumanoidRootPart')) then
-            table.insert(y, v)
+    local x = {}
+    local y = game:GetService('Workspace')
+    for _, v in pairs(y:GetDescendants()) do
+        if (v and v:IsA('BasePart') and v.Name == 'HumanoidRootPart') then
+            table.insert(x, v)
         end
     end
-    return (y)
+    return (x)
 end
 
 function ESP:GetCustomVector(a)
