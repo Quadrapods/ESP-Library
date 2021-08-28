@@ -67,26 +67,23 @@ function ESP:GetObjectVector(a, b, c)
 end
 
 function ESP:SetObjectPointers(a, b, c)
-    local x = x.Size
-    local y = x.CFrame
+    local x = Vector3.new(4.5, 6, 0)
+    local y = a.CFrame
 
-    local PointA = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, x.Y / 2, 0)
-    local PointB = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, x.Y / 2, 0)
-    local PointC = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, -x.Y / 2, 0)
-    local PointD = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, -x.Y / 2, 0)
+    local _a = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, x.Y / 2, 0)
+    local _b = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, x.Y / 2, 0)
+    local _c = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, -x.Y / 2, 0)
+    local _d = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, -x.Y / 2, 0)
 
-    local z = {
-        A = ESP:GetCustomVector(PointA.Position)
-        B = ESP:GetCustomVector(PointB.Position)
-        C = ESP:GetCustomVector(PointC.Position)
-        D = ESP:GetObjectVector(PointD.Position)
-    }
+    local _e = ESP:GetCustomVector(_a.Position)
+    local _f = ESP:GetCustomVector(_b.Position)
+    local _g = ESP:GetCustomVector(_c.Position)
+    local _h = ESP:GetCustomVector(_d.Position)
 
-    b.PointA = z.B
-    b.PointB = z.A
-    b.PointC = z.C
-    b.PointD = z.D
-    return (z)
+    b.PointA = Vector2.new(_f.X, _f.Y)
+    b.PointB = Vector2.new(_e.X, _e.Y)
+    b.PointC = Vector2.new(_g.X, _g.Y)
+    b.PointD = Vector2.new(_h.X, _h.Y)
 end
 
 ----- // Methods // -----
