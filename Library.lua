@@ -36,7 +36,7 @@ function ESP:GetAllRootParts()
     return (x)
 end
 
-function ESP:GetCustomVector(a)
+function ESP:GetCustomRender(a)
     local x = game:GetService('Workspace').CurrentCamera
     local _, y = x:WorldToViewportPoint(a)
     return (y)
@@ -64,6 +64,29 @@ function ESP:GetObjectVector(a, b, c)
         return (Vector2.new(y.X - b, y.Y - c))
     end
     return (Vector2.new(y.X, y.Y))
+end
+
+function ESP:SetObjectPointers(a, b, c)
+    local x = x.Size
+    local y = x.CFrame
+
+    local PointA = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, x.Y / 2, 0)
+    local PointB = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, x.Y / 2, 0)
+    local PointC = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, -x.Y / 2, 0)
+    local PointD = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, -x.Y / 2, 0)
+
+    local z = {
+        A = ESP:GetCustomVector(PointA.Position)
+        B = ESP:GetCustomVector(PointB.Position)
+        C = ESP:GetCustomVector(PointC.Position)
+        D = ESP:GetObjectVector(PointD.Position)
+    }
+
+    b.PointA = z.B
+    b.PointB = z.A
+    b.PointC = z.C
+    b.PointD = z.D
+    return (z)
 end
 
 ----- // Methods // -----
