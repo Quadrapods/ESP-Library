@@ -9,9 +9,11 @@ ESP.__index = ESP
 
 function ESP:ClearRenderObjects()
     local x = self.RenderObjects
-    for i, _ in pairs(x) do
-        x[i]:Remove(); table.remove(x, i)
-    end
+    repeat
+        for i, _ in pairs(x) do
+            x[i]:Remove(); table.remove(x, i)
+        end
+    until (not x[1])
 end
 
 function ESP:GetAllHumanoids()
@@ -66,7 +68,18 @@ function ESP:GetObjectVector(a, b, c)
     return (Vector2.new(y.X, y.Y))
 end
 
-function ESP:SetObjectPointers(a, b, c)
+function ESP:SetObjectProperties(a, ...)
+    for i, v in pairs({...}) do
+        for x, y in pairs(a) do
+            v[x] = y
+        end
+    end
+    return (true)
+end
+
+----- // Object-Specific Functions // ------
+
+function ESP:SetQuadrilateralPointers(a, b, c)
     local x = self.PointerShift or a.Size
     local y = a.CFrame
 
@@ -84,7 +97,16 @@ function ESP:SetObjectPointers(a, b, c)
     b.PointB = Vector2.new(_e.X, _e.Y)
     b.PointC = Vector2.new(_g.X, _g.Y)
     b.PointD = Vector2.new(_h.X, _h.Y)
-    return (true)
+end
+
+function ESP:SetTextPointers(a, b, c)
+    local x = self.PointerShift or a.Size
+    local y = a.CFrame
+
+    local _a = y * CFrame.new(0, c, 0) * CFrame.new(0, x.Y / 2, 0)
+    local _b = ESP:GetCustomVector(_a.Position)
+
+    b.Position = Vector2.new(_b.X, _b.Y)
 end
 
 ----- // Methods // -----
