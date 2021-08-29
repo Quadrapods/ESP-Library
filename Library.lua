@@ -2,7 +2,7 @@
 
 ----- // Module Start // -----
 
-local ESP = {RenderObjects = setmetatable({}, {__mode = 'kv'})}
+local ESP = {PointerShift = Vector3.new(4.5, 6, 0), RenderObjects = setmetatable({}, {__mode = 'kv'})}
 ESP.__index = ESP
 
 ----- // Functions // -----
@@ -67,7 +67,7 @@ function ESP:GetObjectVector(a, b, c)
 end
 
 function ESP:SetObjectPointers(a, b, c)
-    local x = Vector3.new(4.5, 6, 0)
+    local x = self.PointerShift or a.Size
     local y = a.CFrame
 
     local _a = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, x.Y / 2, 0)
@@ -84,6 +84,7 @@ function ESP:SetObjectPointers(a, b, c)
     b.PointB = Vector2.new(_e.X, _e.Y)
     b.PointC = Vector2.new(_g.X, _g.Y)
     b.PointD = Vector2.new(_h.X, _h.Y)
+    return (true)
 end
 
 ----- // Methods // -----
