@@ -69,6 +69,16 @@ function ESP:GetRootParts(a)
     end
 end
 
+function ESP:GetMagnitude(a)
+    local x = game:GetService('Players').LocalPlayer
+
+    if (not x.Character:FindFirstChild('HumanoidRootPart')) or (not a) then
+        return ('Studs')
+    end
+
+    return (math.floor((x.Character:WaitForChild('HumanoidRootPart').CFrame.Position - a.CFrame.Position).Magnitude))
+end
+
 function ESP:GetObjectRender(a)
     local x = game:GetService('Workspace').CurrentCamera
     local _, y = x:WorldToViewportPoint(a.Position)
@@ -307,6 +317,46 @@ function ESP.Highlight(a, b)
                     v:Remove()
                 end
                 c:Disconnect()
+            end
+        end)
+    end
+    coroutine.wrap(Update)()
+end
+
+function ESP.BaseDraw(a, b, c, d, e)
+    local x = game:GetService('Workspace')
+    local Drawings = {
+        Part1 = ESP.new('Line', c)
+        Part2 = ESP.new('Text', d)
+        Part3 = ESP.new('Text', e)
+    }
+    local Part4 = ESP.Outline(a, c)
+    Drawings.Part2.Text = b
+
+    local function Update()
+        local f
+        f = game:GetService('RunService').RenderStepped:Connect(function()
+            if (x:IsAncestorOf(a)) then
+                if (ESP:GetObjectRender(a)) then
+                    Drawings.Part1.To = ESP:GetObjectVector(a)
+                    Drawings.Part2.Position = ESP:GetObjectVector(a, 0, 40)
+                    Drawings.Part3.Position = ESP:GetObjectVector(a, 0, 25)
+
+                    Drawings.Part3.Text = string.format('[%s]', ESP:GetMagnitude(a))
+
+                    for _, v in pairs(Drawings) do
+                        v.Visible = true
+                    end
+                else
+                    for _, v in pairs(Drawings) do
+                        v.Visible = false
+                    end
+                end
+            else
+                for _, v in pairs(Drawings) do
+                    v:Remove()
+                end
+                f:Disconnect()
             end
         end)
     end
