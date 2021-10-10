@@ -27,6 +27,16 @@ function ESP:ClearRenderObjects(a)
     end
 end
 
+function ESP:GetMagnitude(a)
+    local x = game:GetService('Players').LocalPlayer
+
+    if (not x.Character:FindFirstChild('HumanoidRootPart')) or (not a) then
+        return ('Studs')
+    end
+
+    return (math.floor((x.Character:WaitForChild('HumanoidRootPart').CFrame.Position - a.CFrame.Position).Magnitude))
+end
+
 function ESP:GetHumanoids(a)
     local x = {}
     if (a == 'Players') then
@@ -67,16 +77,6 @@ function ESP:GetRootParts(a)
         end
         return (x)
     end
-end
-
-function ESP:GetMagnitude(a)
-    local x = game:GetService('Players').LocalPlayer
-
-    if (not x.Character:FindFirstChild('HumanoidRootPart')) or (not a) then
-        return ('Studs')
-    end
-
-    return (math.floor((x.Character:WaitForChild('HumanoidRootPart').CFrame.Position - a.CFrame.Position).Magnitude))
 end
 
 function ESP:GetObjectRender(a)
@@ -323,26 +323,29 @@ function ESP.Highlight(a, b)
     coroutine.wrap(Update)()
 end
 
-function ESP.BaseDraw(a, b, c, d, e)
+function ESP.BaseDraw(a, b, c, d, e, f)
     local x = game:GetService('Workspace')
     local Drawings = {
         Part1 = ESP.new('Line', c),
         Part2 = ESP.new('Text', d),
         Part3 = ESP.new('Text', e),
+        Part4 = ESP.new('Circle', f),
     }
-    local Part4 = ESP.Outline(a, c)
-    Drawings.Part2.Text = b
+
+    local Part5 = ESP.Outline(a, c)
+    Drawings.Part2.Text = tostring(b)
 
     local function Update()
-        local f
-        f = game:GetService('RunService').RenderStepped:Connect(function()
+        local g
+        g = game:GetService('RunService').RenderStepped:Connect(function()
             if (x:IsAncestorOf(a)) then
                 if (ESP:GetObjectRender(a)) then
                     Drawings.Part1.To = ESP:GetObjectVector(a)
+                    Drawings.Part4.Position = ESP:GetObjectVector(a)
                     Drawings.Part2.Position = ESP:GetObjectVector(a, 0, 40)
                     Drawings.Part3.Position = ESP:GetObjectVector(a, 0, 25)
 
-                    Drawings.Part3.Text = string.format('[%s]', ESP:GetMagnitude(a))
+                    Drawings.Part3.Text = string.format('[%s] [%s]', ESP:GetMagnitude(a), tostring(a.Name))
 
                     for _, v in pairs(Drawings) do
                         v.Visible = true
@@ -356,7 +359,7 @@ function ESP.BaseDraw(a, b, c, d, e)
                 for _, v in pairs(Drawings) do
                     v:Remove()
                 end
-                f:Disconnect()
+                g:Disconnect()
             end
         end)
     end
