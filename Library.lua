@@ -326,9 +326,9 @@ end
 function ESP.BaseDraw(a, b, c, d, e)
     local x = game:GetService('Workspace')
     local Drawings = {
-        Part1 = ESP.new('Line', c)
-        Part2 = ESP.new('Text', d)
-        Part3 = ESP.new('Text', e)
+        Part1 = ESP.new('Line', c),
+        Part2 = ESP.new('Text', d),
+        Part3 = ESP.new('Text', e),
     }
     local Part4 = ESP.Outline(a, c)
     Drawings.Part2.Text = b
