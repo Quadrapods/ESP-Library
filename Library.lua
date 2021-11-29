@@ -2,7 +2,7 @@
 
 ----- // Module Start // -----
 
-local ESP = {PointerShift = Vector3.new(4.5, 6, 0), RenderObjects = setmetatable({}, {__mode = 'kv'})}
+local ESP = {PointerShift = Vector3.new(4.5, 6, 0), RenderObjects = {}, RenderConnections = {}}
 ESP.__index = ESP
 
 ----- // Functions // -----
@@ -21,11 +21,33 @@ function ESP:ClearRenderObjects(a)
     elseif (a and a == 'Recursive') then
         repeat
             Clear()
-        until (not x[1])
+        until (#x <= 0)
     else
         Clear()
     end
 end
+
+function ESP:ClearRenderConnections(a)
+    local x = self.RenderConnections
+    local function Clear()
+        for i, _ in pairs(x) do
+            x[i]:Disconnect(); table.remove(x, i)
+        end
+    end
+    if (a and type(a) == 'number') then
+        for i = 1, a do
+            Clear()
+        end
+    elseif (a and a == 'Recursive') then
+        repeat
+            Clear()
+        until (#x <= 0)
+    else
+        Clear()
+    end
+end
+
+----- // Player Functions // -----
 
 function ESP:GetMagnitude(a)
     local x = game:GetService('Players').LocalPlayer
@@ -41,7 +63,7 @@ function ESP:GetHumanoids(a)
     local x = {}
     if (a == 'Players') then
         local y = game:GetService('Players')
-        for _, v in pairs(y:GetPlayers()) do
+        for _, v in ipairs(y:GetPlayers()) do
             if (v and v.Character and v.Character:FindFirstChild('Humanoid')) then
                 table.insert(x, v.Character:WaitForChild('Humanoid'))
             end
@@ -49,7 +71,7 @@ function ESP:GetHumanoids(a)
         return (x)
     elseif (a == 'Workspace') then
         local y = game:GetService('Workspace')
-        for _, v in pairs(y:GetDescendants()) do
+        for _, v in ipairs(y:GetDescendants()) do
             if (v and v:IsA('Humanoid')) then
                 table.insert(x, v)
             end
@@ -62,7 +84,7 @@ function ESP:GetRootParts(a)
     local x = {}
     if (a == 'Players') then
         local y = game:GetService('Players')
-        for _, v in pairs(y:GetPlayers()) do
+        for _, v in ipairs(y:GetPlayers()) do
             if (v and v.Character and v.Character:FindFirstChild('HumanoidRootPart')) then
                 table.insert(x, v.Character:WaitForChild('HumanoidRootPart'))
             end
@@ -70,7 +92,7 @@ function ESP:GetRootParts(a)
         return (x)
     elseif (a == 'Workspace') then
         local y = game:GetService('Workspace')
-        for _, v in pairs(y:GetDescendants()) do
+        for _, v in ipairs(y:GetDescendants()) do
             if (v and v:IsA('BasePart') and v.Name == 'HumanoidRootPart') then
                 table.insert(x, v)
             end
@@ -78,6 +100,8 @@ function ESP:GetRootParts(a)
         return (x)
     end
 end
+
+----- // Object Functions // -----
 
 function ESP:GetObjectRender(a)
     local x = game:GetService('Workspace').CurrentCamera
@@ -364,6 +388,32 @@ function ESP.BaseDraw(a, b, c, d, e, f)
         end)
     end
     coroutine.wrap(Update)()
+end
+
+function ESP.ConnectDraw(a, b, ...)
+    local x = {...}
+    local y
+
+    local function Check(z)
+        task.wait()
+        if (z and z:IsA('BasePart')) then
+            ESP.BaseDraw(z, table.unpack(x))
+        end
+    end
+
+    if (b and b == 'Children') then
+        for _, v in ipairs(a:GetChildren()) do
+            Check(v)
+        end
+        y = a.ChildAdded:Connect(Check)
+    else
+        for _, v in ipairs(a:GetDescendants()) do
+            Check(v)
+        end
+        y = a.DescendantAdded:Connect(Check)
+    end
+
+    table.insert(ESP.RenderConnections, y); return (y)
 end
 
 return (ESP)
