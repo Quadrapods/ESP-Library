@@ -2,17 +2,62 @@
 
 ----- // Module Start // -----
 
-local ESP = {PointerShift = Vector3.new(4.5, 6, 0), RenderObjects = {}, RenderConnections = {}}
+local ESP = {_SHIFT = Vector3.new(4.5, 6, 0), BlacklistedObjects = {}, RenderObjects = {}, RenderConnections = {}}
 ESP.__index = ESP
 
------ // Functions // -----
+----- // Table Functions // -----
+
+function ESP:IsBlacklistedObject(a)
+    local x = self.BlacklistedObjects
+    if (table.find(x, a)) then
+        return (true)
+    else
+        return (false)
+    end
+end
+
+function ESP:AddBlacklistedObject(a)
+    local x = self.BlacklistedObjects
+    if (not table.find(x, a)) then
+        table.insert(x, a); return (a)
+    end
+end
+
+function ESP:RemoveBlacklistedObject(a)
+    local x = self.BlacklistedObjects
+    if (table.find(x, a)) then
+        table.remove(x, table.find(x, a)); return (a)
+    end
+end
+
+function ESP:ClearBlacklistedObjects(a)
+    local x = self.BlacklistedObjects
+    local function Clear()
+        for _, v in ipairs(x) do
+            table.remove(x, v)
+        end
+        table.clear(x)
+    end
+    if (a and type(a) == 'number') then
+        for i = 1, a do
+            Clear()
+        end
+    elseif (a and a == 'Recursive') then
+        repeat
+            Clear()
+        until (#x <= 0)
+    else
+        Clear()
+    end
+end
 
 function ESP:ClearRenderObjects(a)
     local x = self.RenderObjects
     local function Clear()
-        for i, _ in pairs(x) do
-            x[i]:Remove(); table.remove(x, i)
+        for _, v in ipairs(x) do
+            v:Remove()
         end
+        table.clear(x)
     end
     if (a and type(a) == 'number') then
         for i = 1, a do
@@ -30,9 +75,12 @@ end
 function ESP:ClearRenderConnections(a)
     local x = self.RenderConnections
     local function Clear()
-        for i, _ in pairs(x) do
-            x[i]:Disconnect(); table.remove(x, i)
+        for _, v in ipairs(x) do
+            if (typeof(v) == 'RBXScriptConnection' and v.Connected) then
+                v:Disconnect()
+            end
         end
+        table.clear(x)
     end
     if (a and type(a) == 'number') then
         for i = 1, a do
@@ -47,65 +95,11 @@ function ESP:ClearRenderConnections(a)
     end
 end
 
------ // Player Functions // -----
-
-function ESP:GetMagnitude(a)
-    local x = game:GetService('Players').LocalPlayer
-
-    if (not x.Character:FindFirstChild('HumanoidRootPart')) or (not a) then
-        return ('Studs')
-    end
-
-    return (math.floor((x.Character:WaitForChild('HumanoidRootPart').CFrame.Position - a.CFrame.Position).Magnitude))
-end
-
-function ESP:GetHumanoids(a)
-    local x = {}
-    if (a == 'Players') then
-        local y = game:GetService('Players')
-        for _, v in ipairs(y:GetPlayers()) do
-            if (v and v.Character and v.Character:FindFirstChild('Humanoid')) then
-                table.insert(x, v.Character:WaitForChild('Humanoid'))
-            end
-        end
-        return (x)
-    elseif (a == 'Workspace') then
-        local y = game:GetService('Workspace')
-        for _, v in ipairs(y:GetDescendants()) do
-            if (v and v:IsA('Humanoid')) then
-                table.insert(x, v)
-            end
-        end
-        return (x)
-    end
-end
-
-function ESP:GetRootParts(a)
-    local x = {}
-    if (a == 'Players') then
-        local y = game:GetService('Players')
-        for _, v in ipairs(y:GetPlayers()) do
-            if (v and v.Character and v.Character:FindFirstChild('HumanoidRootPart')) then
-                table.insert(x, v.Character:WaitForChild('HumanoidRootPart'))
-            end
-        end
-        return (x)
-    elseif (a == 'Workspace') then
-        local y = game:GetService('Workspace')
-        for _, v in ipairs(y:GetDescendants()) do
-            if (v and v:IsA('BasePart') and v.Name == 'HumanoidRootPart') then
-                table.insert(x, v)
-            end
-        end
-        return (x)
-    end
-end
-
 ----- // Object Functions // -----
 
 function ESP:GetObjectRender(a)
     local x = game:GetService('Workspace').CurrentCamera
-    local _, y = x:WorldToViewportPoint(a.Position)
+    local _, y = x:WorldToViewportPoint(a.CFrame.Position)
     return (y)
 end
 
@@ -117,7 +111,7 @@ end
 
 function ESP:GetObjectVector(a, b, c)
     local x = game:GetService('Workspace').CurrentCamera
-    local y, _ = x:WorldToViewportPoint(a.Position)
+    local y, _ = x:WorldToViewportPoint(a.CFrame.Position)
     if (b and c) then
         return (Vector2.new(y.X - b, y.Y - c))
     end
@@ -141,30 +135,80 @@ function ESP:SetObjectProperties(a, ...)
     end
 end
 
------ // Object Specific Functions // -----
+----- // Player Functions // -----
 
-function ESP:SetTextPosition(a, b, c)
-    local x = self.PointerShift or a.Size
-    local y = a.CFrame
-
-    local d = y * CFrame.new(0, c, 0) * CFrame.new(0, x.Y / 2, 0)
-
-    b.Position = ESP:GetCustomVector(d.Position)
+function ESP:GetHumanoids(a)
+    local x = {}
+    local y = game:GetService(a)
+    if (a and a == 'Players') then
+        for _, v in ipairs(y:GetPlayers()) do
+            if (v and v.Character and v.Character:FindFirstChild('Humanoid')) then
+                table.insert(x, v.Character:WaitForChild('Humanoid'))
+            end
+        end
+    elseif (a and a == 'Workspace') then
+        for _, v in ipairs(y:GetDescendants()) do
+            if (v and v:IsA('Humanoid')) then
+                table.insert(x, v)
+            end
+        end
+    end
+    return (x)
 end
 
-function ESP:SetQuadrilateralPosition(a, b, c)
-    local x = self.PointerShift or a.Size
+function ESP:GetRootParts(a)
+    local x = {}
+    local y = game:GetService(a)
+    if (a and a == 'Players') then
+        for _, v in ipairs(y:GetPlayers()) do
+            if (v and v.Character and v.Character:FindFirstChild('HumanoidRootPart')) then
+                table.insert(x, v.Character:WaitForChild('HumanoidRootPart'))
+            end
+        end
+    elseif (a and a == 'Workspace') then
+        for _, v in ipairs(y:GetDescendants()) do
+            if (v and v:IsA('BasePart') and v.Name == 'HumanoidRootPart') then
+                table.insert(x, v)
+            end
+        end
+    end
+    return (x)
+end
+
+function ESP:GetMagnitude(a)
+    local x = game:GetService('Players').LocalPlayer
+
+    if (not x.Character:FindFirstChild('HumanoidRootPart')) or (not a) then
+        return ('Studs')
+    end
+
+    return (math.floor((x.Character:WaitForChild('HumanoidRootPart').CFrame.Position - a.CFrame.Position).Magnitude))
+end
+
+----- // Deprecated Functions // -----
+
+function ESP:SetTextPosition(a, b, c)
+    local x = self._SHIFT or a.Size
     local y = a.CFrame
 
-    local d = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, x.Y / 2, 0)
-    local e = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, x.Y / 2, 0)
-    local f = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, -x.Y / 2, 0)
-    local g = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, -x.Y / 2, 0)
+    local _a = y * CFrame.new(0, c, 0) * CFrame.new(0, x.Y / 2, 0)
 
-    b.PointA = ESP:GetCustomVector(e.Position)
-    b.PointB = ESP:GetCustomVector(d.Position)
-    b.PointC = ESP:GetCustomVector(f.Position)
-    b.PointD = ESP:GetCustomVector(g.Position)
+    b.Position = ESP:GetCustomVector(_a.Position)
+end
+
+function ESP:SetQuadPosition(a, b, c)
+    local x = self._SHIFT or a.Size
+    local y = a.CFrame
+
+    local _a = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, x.Y / 2, 0)
+    local _b = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, x.Y / 2, 0)
+    local _c = y * CFrame.new(0, c, 0) * CFrame.new(x.X / 2, -x.Y / 2, 0)
+    local _d = y * CFrame.new(0, c, 0) * CFrame.new(-x.X / 2, -x.Y / 2, 0)
+
+    b.PointA = ESP:GetCustomVector(_b.Position)
+    b.PointB = ESP:GetCustomVector(_a.Position)
+    b.PointC = ESP:GetCustomVector(_c.Position)
+    b.PointD = ESP:GetCustomVector(_d.Position)
 end
 
 ----- // Methods // -----
@@ -177,9 +221,76 @@ function ESP.new(a, b)
     table.insert(ESP.RenderObjects, x); return (x)
 end
 
+function ESP.Create(a, b, ...)
+    local x = game:GetService('Workspace')
+    local y = {...}
+    local z = {
+        Part1 = ESP.new('Line', y[1]),
+        Part2 = ESP.new('Text', y[2]),
+        Part3 = ESP.new('Text', y[3]),
+        Part4 = ESP.new('Circle', y[4]),
+    }
+
+    local Part5 = ESP.Outline(a, y[1])
+    z.Part2.Text = tostring(b)
+
+    local function Update()
+        local c
+        c = game:GetService('RunService').RenderStepped:Connect(function()
+            if (x:IsAncestorOf(a)) then
+                if (ESP:GetObjectRender(a)) then
+                    z.Part1.To = ESP:GetObjectVector(a)
+                    z.Part4.Position = ESP:GetObjectVector(a)
+                    z.Part2.Position = ESP:GetObjectVector(a, 0, 40)
+                    z.Part3.Position = ESP:GetObjectVector(a, 0, 25)
+
+                    z.Part3.Text = string.format('[%s] [%s]', ESP:GetMagnitude(a), tostring(a.Name))
+
+                    for _, v in pairs(z) do
+                        v.Visible = true
+                    end
+                else
+                    for _, v in pairs(z) do
+                        v.Visible = false
+                    end
+                end
+            else
+                for _, v in pairs(z) do
+                    v:Remove()
+                end
+                c:Disconnect()
+            end
+        end)
+    end
+    task.spawn(Update)
+end
+
+function ESP.Connect(a, b, ...)
+    local x
+    local y = {...}
+    local function Check(z)
+        task.wait()
+        if (z and z:IsA('BasePart') and not ESP:IsBlacklistedObject(z)) then
+            ESP.Create(z, table.unpack(y)); ESP:AddBlacklistedObject(z)
+        end
+    end
+    if (b and b == 'Children') then
+        for _, v in ipairs(a:GetChildren()) do
+            Check(v)
+        end
+        x = a.ChildAdded:Connect(Check)
+    elseif (b and b == 'Descendants') then
+        for _, v in ipairs(a:GetDescendants()) do
+            Check(v)
+        end
+        x = a.DescendantAdded:Connect(Check)
+    end
+    table.insert(ESP.RenderConnections, x); return (x)
+end
+
 function ESP.Outline(a, b)
     local x = game:GetService('Workspace')
-    local Drawings = {
+    local y = {
         Part1 = ESP.new('Line', b),
         Part2 = ESP.new('Line', b),
         Part3 = ESP.new('Line', b),
@@ -195,8 +306,8 @@ function ESP.Outline(a, b)
     }
 
     local function Update()
-        local c
-        c = game:GetService('RunService').RenderStepped:Connect(function()
+        local z
+        z = game:GetService('RunService').RenderStepped:Connect(function()
             if (x:IsAncestorOf(a)) then
                 if (ESP:GetObjectRender(a)) then
                     local _a = a.Size.X / 2
@@ -213,64 +324,64 @@ function ESP.Outline(a, b)
                     local j = ESP:GetCustomVector(a.CFrame * CFrame.new(_a, -_b, _c).Position)
                     local k = ESP:GetCustomVector(a.CFrame * CFrame.new(_a, -_b, -_c).Position)
 
-                    Drawings.Part1.To = e
-                    Drawings.Part1.From = d
+                    y.Part1.To = e
+                    y.Part1.From = d
 
-                    Drawings.Part2.To = f
-                    Drawings.Part2.From = e
+                    y.Part2.To = f
+                    y.Part2.From = e
 
-                    Drawings.Part3.To = g
-                    Drawings.Part3.From = f
+                    y.Part3.To = g
+                    y.Part3.From = f
 
-                    Drawings.Part4.To = d
-                    Drawings.Part4.From = g
+                    y.Part4.To = d
+                    y.Part4.From = g
 
-                    Drawings.Part5.To = i
-                    Drawings.Part5.From = h
+                    y.Part5.To = i
+                    y.Part5.From = h
 
-                    Drawings.Part6.To = j
-                    Drawings.Part6.From = i
+                    y.Part6.To = j
+                    y.Part6.From = i
 
-                    Drawings.Part7.To = k
-                    Drawings.Part7.From = j
+                    y.Part7.To = k
+                    y.Part7.From = j
 
-                    Drawings.Part8.To = h
-                    Drawings.Part8.From = k
+                    y.Part8.To = h
+                    y.Part8.From = k
 
-                    Drawings.Part9.To = d
-                    Drawings.Part9.From = h
+                    y.Part9.To = d
+                    y.Part9.From = h
 
-                    Drawings.Part10.To = e
-                    Drawings.Part10.From = i
+                    y.Part10.To = e
+                    y.Part10.From = i
 
-                    Drawings.Part11.To = f
-                    Drawings.Part11.From = j
+                    y.Part11.To = f
+                    y.Part11.From = j
 
-                    Drawings.Part12.To = g
-                    Drawings.Part12.From = k
+                    y.Part12.To = g
+                    y.Part12.From = k
 
-                    for _, v in pairs(Drawings) do
+                    for _, v in pairs(y) do
                         v.Visible = true
                     end
                 else
-                    for _, v in pairs(Drawings) do
+                    for _, v in pairs(y) do
                         v.Visible = false
                     end
                 end
             else
-                for _, v in pairs(Drawings) do
+                for _, v in pairs(y) do
                     v:Remove()
                 end
-                c:Disconnect()
+                z:Disconnect()
             end
         end)
     end
-    coroutine.wrap(Update)()
+    task.spawn(Update)
 end
 
 function ESP.Highlight(a, b)
     local x = game:GetService('Workspace')
-    local Drawings = {
+    local y = {
         Part1 = ESP.new('Quad', b),
         Part2 = ESP.new('Quad', b),
         Part3 = ESP.new('Quad', b),
@@ -280,8 +391,8 @@ function ESP.Highlight(a, b)
     }
 
     local function Update()
-        local c
-        c = game:GetService('RunService').RenderStepped:Connect(function()
+        local z
+        z = game:GetService('RunService').RenderStepped:Connect(function()
             if (x:IsAncestorOf(a)) then
                 if (ESP:GetObjectRender(a)) then
                     local _a = a.Size.X / 2
@@ -298,122 +409,53 @@ function ESP.Highlight(a, b)
                     local j = ESP:GetCustomVector(a.CFrame * CFrame.new(_a, -_b, _c).Position)
                     local k = ESP:GetCustomVector(a.CFrame * CFrame.new(_a, -_b, -_c).Position)
 
-                    Drawings.Part1.PointA = d
-                    Drawings.Part1.PointB = e
-                    Drawings.Part1.PointC = f
-                    Drawings.Part1.PointD = g
+                    y.Part1.PointA = d
+                    y.Part1.PointB = e
+                    y.Part1.PointC = f
+                    y.Part1.PointD = g
 
-                    Drawings.Part2.PointA = h
-                    Drawings.Part2.PointB = i
-                    Drawings.Part2.PointC = j
-                    Drawings.Part2.PointD = k
+                    y.Part2.PointA = h
+                    y.Part2.PointB = i
+                    y.Part2.PointC = j
+                    y.Part2.PointD = k
 
-                    Drawings.Part3.PointA = d
-                    Drawings.Part3.PointB = e
-                    Drawings.Part3.PointC = i
-                    Drawings.Part3.PointD = h
+                    y.Part3.PointA = d
+                    y.Part3.PointB = e
+                    y.Part3.PointC = i
+                    y.Part3.PointD = h
 
-                    Drawings.Part4.PointA = e
-                    Drawings.Part4.PointB = f
-                    Drawings.Part4.PointC = j
-                    Drawings.Part4.PointD = i
+                    y.Part4.PointA = e
+                    y.Part4.PointB = f
+                    y.Part4.PointC = j
+                    y.Part4.PointD = i
 
-                    Drawings.Part5.PointA = f
-                    Drawings.Part5.PointB = g
-                    Drawings.Part5.PointC = k
-                    Drawings.Part5.PointD = j
+                    y.Part5.PointA = f
+                    y.Part5.PointB = g
+                    y.Part5.PointC = k
+                    y.Part5.PointD = j
 
-                    Drawings.Part6.PointA = g
-                    Drawings.Part6.PointB = d
-                    Drawings.Part6.PointC = h
-                    Drawings.Part6.PointD = k
+                    y.Part6.PointA = g
+                    y.Part6.PointB = d
+                    y.Part6.PointC = h
+                    y.Part6.PointD = k
 
-                    for _, v in pairs(Drawings) do
+                    for _, v in pairs(y) do
                         v.Visible = true
                     end
                 else
-                    for _, v in pairs(Drawings) do
+                    for _, v in pairs(y) do
                         v.Visible = false
                     end
                 end
             else
-                for _, v in pairs(Drawings) do
+                for _, v in pairs(y) do
                     v:Remove()
                 end
-                c:Disconnect()
+                z:Disconnect()
             end
         end)
     end
-    coroutine.wrap(Update)()
-end
-
-function ESP.BaseDraw(a, b, c, d, e, f)
-    local x = game:GetService('Workspace')
-    local Drawings = {
-        Part1 = ESP.new('Line', c),
-        Part2 = ESP.new('Text', d),
-        Part3 = ESP.new('Text', e),
-        Part4 = ESP.new('Circle', f),
-    }
-
-    local Part5 = ESP.Outline(a, c)
-    Drawings.Part2.Text = tostring(b)
-
-    local function Update()
-        local g
-        g = game:GetService('RunService').RenderStepped:Connect(function()
-            if (x:IsAncestorOf(a)) then
-                if (ESP:GetObjectRender(a)) then
-                    Drawings.Part1.To = ESP:GetObjectVector(a)
-                    Drawings.Part4.Position = ESP:GetObjectVector(a)
-                    Drawings.Part2.Position = ESP:GetObjectVector(a, 0, 40)
-                    Drawings.Part3.Position = ESP:GetObjectVector(a, 0, 25)
-
-                    Drawings.Part3.Text = string.format('[%s] [%s]', ESP:GetMagnitude(a), tostring(a.Name))
-
-                    for _, v in pairs(Drawings) do
-                        v.Visible = true
-                    end
-                else
-                    for _, v in pairs(Drawings) do
-                        v.Visible = false
-                    end
-                end
-            else
-                for _, v in pairs(Drawings) do
-                    v:Remove()
-                end
-                g:Disconnect()
-            end
-        end)
-    end
-    coroutine.wrap(Update)()
-end
-
-function ESP.ConnectDraw(a, b, ...)
-    local x = {...}
-    local y
-
-    local function Check(z)
-        task.wait()
-        if (z and z:IsA('BasePart')) then
-            ESP.BaseDraw(z, table.unpack(x))
-        end
-    end
-
-    if (b and b == 'Children') then
-        for _, v in ipairs(a:GetChildren()) do
-            Check(v)
-        end
-        y = a.ChildAdded:Connect(Check)
-    else
-        for _, v in ipairs(a:GetDescendants()) do
-            Check(v)
-        end
-        y = a.DescendantAdded:Connect(Check)
-    end
-
-    table.insert(ESP.RenderConnections, y); return (y)
+    task.spawn(Update)
 end
 
 return (ESP)
