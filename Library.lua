@@ -458,6 +458,17 @@ function ESP.Highlight(a, b)
     task.spawn(Update)
 end
 
+function ESP:Spotlight(a, b)
+    local x = Instance.new('Highlight', a);
+
+    if (b) then
+        for i, v in pairs(b) do
+            x[i] = v
+        end
+    end
+    return (x)
+end
+
 return (ESP)
 
 ----- // Module End // -----
