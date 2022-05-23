@@ -459,7 +459,7 @@ function ESP.Highlight(a, b)
 end
 
 function ESP:Spotlight(a, b)
-    local x = Instance.new('Highlight', a);
+    local x = Instance.new('Highlight', a)
 
     if (b) then
         for i, v in pairs(b) do
