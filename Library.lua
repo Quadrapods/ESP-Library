@@ -221,6 +221,17 @@ function ESP.new(a, b)
     table.insert(ESP.RenderObjects, x); return (x)
 end
 
+function ESP.Rainbow(a)
+    while (a) do
+        task.wait()
+
+        local b = ((os.clock() * 128 % 255) / 255)
+        local c = Color3.fromHSV(b, 1, 1)
+
+        return (c)
+    end
+end
+
 function ESP.Create(a, b, ...)
     local x = game:GetService('Workspace')
     local y = {...}
