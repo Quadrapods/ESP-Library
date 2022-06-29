@@ -458,14 +458,19 @@ function ESP.Highlight(a, b)
     task.spawn(Update)
 end
 
-function ESP:Spotlight(a, b)
-    local x = Instance.new('Highlight', a)
+function ESP.Spotlight(a, b)
+    local x = Instance.new('Highlight')
 
     if (b) then
         for i, v in pairs(b) do
             x[i] = v
         end
     end
+
+    if (not x.Parent) then
+        x.Parent = a
+    end
+
     return (x)
 end
 
